@@ -110,9 +110,9 @@ variable "db_username" {
 }
 
 variable "db_multi_az" {
-  description = "Whether RDS runs a standby in the second Availability Zone. False in the lab for cost; the subnet group already spans both zones."
+  description = "Whether RDS runs a standby in the second Availability Zone. True, as deployed: it roughly doubles the database cost, which is the trade-off being made."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "db_backup_retention_period" {

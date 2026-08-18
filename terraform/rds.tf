@@ -43,8 +43,10 @@ resource "aws_db_instance" "mysql" {
   # are independent and both are set.
   publicly_accessible = false
 
-  # False to match the lab. The subnet group above already spans two zones, so
-  # flipping this to true is the only change needed for high availability.
+  # True, as deployed. The standby lives in the second database subnet, serves
+  # no traffic and cannot be read from: it exists so that a zone failure is a
+  # failover behind the same endpoint instead of an outage. It also roughly
+  # doubles the cost of the database, which is the reason it is a variable.
   multi_az = var.db_multi_az
 
   # Matches what was deployed. Production would be true, with a customer

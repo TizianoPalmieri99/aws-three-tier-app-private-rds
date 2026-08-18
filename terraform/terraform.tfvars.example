@@ -30,7 +30,7 @@ db_instance_class          = "db.t4g.micro"
 db_allocated_storage       = 20
 db_name                    = "appdb"
 db_username                = "admin"
-db_multi_az                = false # true is the only change needed for high availability
+db_multi_az                = true # set to false to halve the database cost, losing the standby
 db_backup_retention_period = 1
 
 # The address that receives the alarm notifications. Leave it out and no

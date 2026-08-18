@@ -11,11 +11,12 @@ exist beforehand.
 Two deliberate differences from what was deployed by hand, both explained in the main
 [README](../README.md):
 
-* the CloudWatch Agent and its two log groups **are** in this configuration, while on the manual
-  deployment that part is still to be applied;
 * the Auto Scaling group is named `project4-web-asg` here, instead of the confusing
   `project4-launch-template` the console build ended up with. The CPU alarm reads the name from
-  the resource, so the dimension follows automatically.
+  the resource, so the dimension follows automatically;
+* the two log groups are declared explicitly, while on the manual deployment the CloudWatch
+  Agent created them itself on first write. The result is the same logs, with a retention that
+  is set up front rather than left to default to "never expire".
 
 ## What Terraform Creates
 
@@ -42,8 +43,8 @@ Security:
 Database:
 
 * a DB subnet group over the two private database subnets;
-* a `db.t4g.micro` MySQL instance on gp3 storage, not publicly accessible, Single-AZ by default,
-  with the master password generated and stored in Secrets Manager by RDS itself.
+* a `db.t4g.micro` MySQL instance on gp3 storage, not publicly accessible, **Multi-AZ**, with
+  the master password generated and stored in Secrets Manager by RDS itself.
 
 Access:
 
@@ -196,7 +197,8 @@ Removes everything this configuration created.
 
 **These resources cost money while they exist.** The NAT Gateway is charged per hour plus data
 processed, the load balancer is charged per hour whether or not it receives traffic, the RDS
-instance is charged per hour and its storage and backups are charged even while it is stopped,
+instance is charged per hour (twice over, because Multi-AZ runs a standby) and its storage and
+backups are charged even while it is stopped,
 and the instances and their EBS volumes run continuously. `terraform destroy` also releases the
 Elastic IP, which is billed on its own once it is no longer attached.
 
