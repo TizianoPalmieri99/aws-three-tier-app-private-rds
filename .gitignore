@@ -1,0 +1,33 @@
+# --- Credentials and secrets: never commit ---
+*.pem
+*.ppk
+.env
+.env.*
+credentials
+.aws/
+
+# --- Terraform ---
+# The provider lock file IS committed on purpose: it pins the provider versions
+# so that terraform init resolves the same ones on any machine.
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+crash.*.log
+
+# --- Files that would carry the account ID, a secret ARN or an endpoint ---
+*.local.json
+*.local.md
+
+# --- My own study notes, not part of the published project ---
+*Passaggi*
+*_IT.md
+
+# --- OS / editor noise ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
