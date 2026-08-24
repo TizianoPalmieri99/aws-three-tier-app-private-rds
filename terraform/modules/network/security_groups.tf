@@ -14,12 +14,12 @@
 
 # The only security group exposed to the Internet.
 resource "aws_security_group" "alb" {
-  name        = "${var.project_name}-alb-sg"
+  name        = "${var.name_prefix}-alb-sg"
   description = "Allows inbound HTTP from the Internet to the Application Load Balancer"
   vpc_id      = aws_vpc.main.id
 
   tags = {
-    Name = "${var.project_name}-alb-sg"
+    Name = "${var.name_prefix}-alb-sg"
   }
 }
 
@@ -33,7 +33,7 @@ resource "aws_vpc_security_group_ingress_rule" "alb_http" {
   to_port     = 80
 }
 
-# Permissive on purpose: this mirrors what was deployed in the Console, where
+# Permissive on purpose: this mirrors what was deployed in the console, where
 # outbound rules were left at the AWS default while building and testing.
 resource "aws_vpc_security_group_egress_rule" "alb_all" {
   security_group_id = aws_security_group.alb.id
@@ -45,20 +45,20 @@ resource "aws_vpc_security_group_egress_rule" "alb_all" {
 
 # --- Application tier -------------------------------------------------------
 
-resource "aws_security_group" "ec2" {
-  name        = "${var.project_name}-ec2-sg"
+resource "aws_security_group" "app" {
+  name        = "${var.name_prefix}-ec2-sg"
   description = "Allows inbound HTTP only from the load balancer security group"
   vpc_id      = aws_vpc.main.id
 
   tags = {
-    Name = "${var.project_name}-ec2-sg"
+    Name = "${var.name_prefix}-ec2-sg"
   }
 }
 
 # There is deliberately no rule for port 22. Administration goes through
-# Systems Manager Session Manager, see iam.tf.
-resource "aws_vpc_security_group_ingress_rule" "ec2_http_from_alb" {
-  security_group_id = aws_security_group.ec2.id
+# Systems Manager Session Manager, see the iam module.
+resource "aws_vpc_security_group_ingress_rule" "app_http_from_alb" {
+  security_group_id = aws_security_group.app.id
   description       = "HTTP from the load balancer only"
 
   referenced_security_group_id = aws_security_group.alb.id
@@ -69,8 +69,8 @@ resource "aws_vpc_security_group_ingress_rule" "ec2_http_from_alb" {
 
 # Outbound is needed for the first-boot package install, the SSM agent, the
 # Secrets Manager call and the CloudWatch Agent. Left permissive, as deployed.
-resource "aws_vpc_security_group_egress_rule" "ec2_all" {
-  security_group_id = aws_security_group.ec2.id
+resource "aws_vpc_security_group_egress_rule" "app_all" {
+  security_group_id = aws_security_group.app.id
   description       = "All outbound traffic"
 
   cidr_ipv4   = "0.0.0.0/0"
@@ -79,23 +79,23 @@ resource "aws_vpc_security_group_egress_rule" "ec2_all" {
 
 # --- Database tier ----------------------------------------------------------
 
-resource "aws_security_group" "rds" {
-  name        = "${var.project_name}-rds-sg"
+resource "aws_security_group" "db" {
+  name        = "${var.name_prefix}-rds-sg"
   description = "Allows inbound MySQL only from the application security group"
   vpc_id      = aws_vpc.main.id
 
   tags = {
-    Name = "${var.project_name}-rds-sg"
+    Name = "${var.name_prefix}-rds-sg"
   }
 }
 
 # The rule that makes the database tier a tier. Source is the EC2 security
 # group: not my laptop, not a CIDR block, not the VPC range.
-resource "aws_vpc_security_group_ingress_rule" "rds_mysql_from_ec2" {
-  security_group_id = aws_security_group.rds.id
+resource "aws_vpc_security_group_ingress_rule" "db_mysql_from_app" {
+  security_group_id = aws_security_group.db.id
   description       = "MySQL from the application tier only"
 
-  referenced_security_group_id = aws_security_group.ec2.id
+  referenced_security_group_id = aws_security_group.app.id
   ip_protocol                  = "tcp"
   from_port                    = 3306
   to_port                      = 3306
@@ -103,8 +103,8 @@ resource "aws_vpc_security_group_ingress_rule" "rds_mysql_from_ec2" {
 
 # Kept as deployed. It changes nothing on its own: the database subnets have no
 # route to the Internet, so there is nowhere for this traffic to go.
-resource "aws_vpc_security_group_egress_rule" "rds_all" {
-  security_group_id = aws_security_group.rds.id
+resource "aws_vpc_security_group_egress_rule" "db_all" {
+  security_group_id = aws_security_group.db.id
   description       = "All outbound traffic"
 
   cidr_ipv4   = "0.0.0.0/0"

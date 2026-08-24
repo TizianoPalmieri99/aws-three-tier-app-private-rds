@@ -1,0 +1,25 @@
+# Terraform working files. The repository .gitignore already covers these; this
+# file keeps the rule next to the code it applies to.
+
+# Providers and modules downloaded by `terraform init`.
+.terraform/
+
+# State. It is not a log: it holds every attribute of every resource, secrets
+# included. It belongs in an encrypted, versioned bucket, never in Git.
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+
+# Local overrides. The committed environment files are
+# environments/*/terraform.tfvars, and nothing else.
+*.auto.tfvars
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+crash.log
+crash.*.log
+
+# The provider lock file is NOT ignored on purpose: it pins the exact provider
+# versions so `terraform init` resolves the same ones on every machine.

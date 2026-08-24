@@ -12,8 +12,10 @@ credentials
 .terraform/
 *.tfstate
 *.tfstate.*
+# The per-environment tfvars ARE committed: they define the environment and
+# hold no secrets. Anything else named *.tfvars is a local override.
 *.tfvars
-!*.tfvars.example
+!terraform/environments/*/terraform.tfvars
 crash.log
 crash.*.log
 
